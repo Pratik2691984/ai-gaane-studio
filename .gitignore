@@ -1,0 +1,10 @@
+cat <<EOF > .gitignore
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.json
+!package.json
+node_modules/
+dist/
+EOF

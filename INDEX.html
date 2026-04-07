@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ai gaane – Loka Ascension Studio</title>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', monospace; background: #000; color: #ccffcc; }
+        #ui { position: absolute; bottom: 20px; left: 0; right: 0; text-align: center; z-index: 20; pointer-events: none; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); padding: 15px; border-radius: 30px; margin: 20px; border: 1px solid #0f0; }
+        .hud { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 15px; border-left: 5px solid #0f0; font-size: 14px; z-index: 20; pointer-events: none; font-family: monospace; line-height: 1.6; }
+        button { pointer-events: auto; background: #0f0; color: #000; border: none; padding: 12px 25px; margin: 5px; border-radius: 40px; font-weight: bold; cursor: pointer; font-family: monospace; transition: 0.3s; }
+        button:hover { background: #fff; transform: translateY(-2px); box-shadow: 0 0 15px #0f0; }
+        #auto-btn { background: #ffaa44; }
+        #message { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); font-size: 4rem; font-weight: bold; text-shadow: 0 0 30px #0f0; opacity: 0; transition: opacity 0.4s; text-align: center; z-index: 30; pointer-events: none; color: #fff; }
+        #moksha { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: none; justify-content: center; align-items: center; z-index: 1000; color: black; font-size: 6rem; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="hud">
+        🌀 LOKA: <span id="lokaVal">1</span> / 14<br>
+        🔊 FREQ: <span id="freqVal">432</span> Hz<br>
+        ✨ RAGA: <span id="ragaName">Bhairav (Sa)</span>
+    </div>
+    
+    <div id="message"></div>
+
+    <div id="ui">
+        <div style="margin-bottom: 10px;">⚛️ QUANTATECH PRODUCTION STUDIO ⚛️</div>
+        <button id="ascendBtn">⬆️ MANUAL ASCEND (SPACE)</button>
+        <button id="auto-btn">⚡ AUTO-RITUAL (14 LOKAS)</button>
+        <button id="exportBtn" style="background:#44aaff;">📜 EXPORT AKASHIC LOG</button>
+    </div>
+
+    <div id="moksha">✨ MOKSHA ✨</div>
+
+    <script type="module">
+        import * as THREE from 'https://unpkg.com/three@0.128.0/build/three.module.js';
+
+        // --- QUANTATECH RATIOS (432 Hz Base) ---
+        const LOKA_DATA = {
+            1: { ratio: 1.0, raga: "Bhairav", note: "Sa" },
+            2: { ratio: 1.125, raga: "Yaman", note: "Re" },
+            3: { ratio: 1.25, raga: "Bhopali", note: "Ga" },
+            4: { ratio: 1.333, raga: "Bhairavi", note: "Ma" },
+            5: { ratio: 1.5, raga: "Todi", note: "Pa" },
+            6: { ratio: 1.666, raga: "Marwa", note: "Dha" },
+            7: { ratio: 1.875, raga: "Poorvi", note: "Ni" },
+            8: { ratio: 2.0, raga: "Atala", note: "Sa+" },
+            9: { ratio: 2.25, raga: "Vitala", note: "Re+" },
+            10: { ratio: 2.5, raga: "Sutala", note: "Ga+" },
+            11: { ratio: 2.666, raga: "Talatala", note: "Ma+" },
+            12: { ratio: 3.0, raga: "Mahatala", note: "Pa+" },
+            13: { ratio: 3.333, raga: "Rasatala", note: "Dha+" },
+            14: { ratio: 3.75, raga: "Patala", note: "Ni+" }
+        };
+
+        // --- STATE ---
+        let loka = 1, journey = [], audioOn = false, auto = false;
+        let ctx, mainOsc, tanpura, bass;
+
+        // --- THREE.JS SCENE ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        const orb = new THREE.Mesh(new THREE.IcosahedronGeometry(1.5, 2), new THREE.MeshStandardMaterial({ color: 0x00ff88, wireframe: true, emissive: 0x00ff44 }));
+        scene.add(orb);
+        scene.add(new THREE.PointLight(0x00ff88, 2, 50));
+        camera.position.z = 8;
+
+        const stars = new THREE.Points(new THREE.BufferGeometry(), new THREE.PointsMaterial({ color: 0xffffff, size: 0.1 }));
+        const starPos = [];
+        for(let i=0; i<1000; i++) starPos.push((Math.random()-0.5)*100, (Math.random()-0.5)*100, (Math.random()-0.5)*100);
+        stars.geometry.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
+        scene.add(stars);
+
+        // --- AUDIO ---
+        function initAudio() {
+            ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const createDrone = (f, g, type='sine') => {
+                let o = ctx.createOscillator(); let gn = ctx.createGain();
+                o.type = type; o.frequency.value = f; gn.gain.value = g;
+                o.connect(gn); gn.connect(ctx.destination); o.start(); return {o, gn};
+            };
+            mainOsc = createDrone(432, 0.1);
+            tanpura = createDrone(648, 0.05); // Pure 5th
+            bass = createDrone(216, 0.04);    // Lower Octave
+            audioOn = true;
+        }
+
+        function ascend() {
+            if(loka >= 14) { triggerMoksha(); return; }
+            loka++;
+            const d = LOKA_DATA[loka];
+            const f = 432 * d.ratio;
+            
+            // Audio Glide
+            [mainOsc, tanpura, bass].forEach((osc, i) => {
+                const mult = [1, 1.5, 0.5][i];
+                osc.o.frequency.setTargetAtTime(f * mult, ctx.currentTime, 0.15);
+            });
+
+            // UI
+            document.getElementById('lokaVal').innerText = loka;
+            document.getElementById('freqVal').innerText = Math.round(f);
+            document.getElementById('ragaName').innerText = `${d.raga} (${d.note})`;
+            
+            const msg = document.getElementById('message');
+            msg.innerHTML = `✨ ${d.note} ✨<br><small>${d.raga}</small>`;
+            msg.style.opacity = 1; setTimeout(()=> msg.style.opacity = 0, 1500);
+
+            journey.push({ loka, raga: d.raga, hz: f });
+            orb.scale.setScalar(1.2); setTimeout(()=> orb.scale.setScalar(1), 300);
+        }
+
+        function triggerMoksha() {
+            document.getElementById('moksha').style.display = 'flex';
+            [mainOsc, tanpura, bass].forEach(osc => osc.gn.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 3));
+            saveLog();
+        }
+
+        function saveLog() {
+            const blob = new Blob([JSON.stringify(journey, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `akashic_record.json`; a.click();
+        }
+
+        // --- CONTROLS ---
+        document.body.onclick = () => { if(!audioOn) initAudio(); };
+        document.getElementById('ascendBtn').onclick = ascend;
+        document.getElementById('auto-btn').onclick = () => {
+            if(!audioOn) initAudio();
+            document.getElementById('auto-btn').innerText = "RITUAL ACTIVE...";
+            setInterval(ascend, 4000);
+        };
+        document.getElementById('exportBtn').onclick = saveLog;
+        window.onkeydown = (e) => { if(e.code === 'Space') ascend(); };
+
+        function animate() {
+            requestAnimationFrame(animate);
+            orb.rotation.y += 0.01;
+            stars.rotation.z += 0.001;
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>
