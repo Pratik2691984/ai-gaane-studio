@@ -24,10 +24,18 @@
     <div id="message"></div>
 
     <div id="ui">
-        <div style="margin-bottom: 10px;">⚛️ QUANTATECH PRODUCTION STUDIO ⚛️</div>
-        <button id="ascendBtn">⬆️ MANUAL ASCEND (SPACE)</button>
-        <button id="auto-btn">⚡ AUTO-RITUAL (14 LOKAS)</button>
-        <button id="exportBtn" style="background:#44aaff;">📜 EXPORT AKASHIC LOG</button>
+        <div style="margin-bottom: 10px;">⚛️ QUANTATECH PRODUCTION STUDIO ⚛️</div>
+
+        <div style="margin-bottom: 15px;">
+            <label for="raga-picker" style="font-size: 12px; display: block; margin-bottom: 5px;">🕉️ SELECT VIBRATION</label>
+            <select id="raga-picker" style="background: #111; color: #0f0; border: 1px solid #0f0; padding: 10px; border-radius: 10px; width: 200px; cursor: pointer; outline: none;">
+                <option value="" disabled selected>Loading Ragas...</option>
+            </select>
+        </div>
+
+        <button id="ascendBtn">⬆️ MANUAL ASCEND (SPACE)</button>
+        <button id="auto-btn">⚡ AUTO-RITUAL (14 LOKAS)</button>
+        <button id="exportBtn" style="background:#44aaff;">📜 EXPORT AKASHIC LOG</button>
     </div>
 
     <div id="moksha">✨ MOKSHA ✨</div>
@@ -53,9 +61,12 @@
             14: { ratio: 3.75, raga: "Patala", note: "Ni+" }
         };
 
-        // --- STATE ---
-        let loka = 1, journey = [], audioOn = false, auto = false;
-        let ctx, mainOsc, tanpura, bass;
+        // --- STATE ---
+        let loka = 1, journey = [], audioOn = false, auto = false;
+        let ctx, mainOsc, tanpura, bass;
+        let tanpuraOscs = []; // additional multi-oscillator tanpura drone
+        // Reverb nodes
+        let convolver, reverbGain, reverbWet = 0.25;
 
         // --- THREE.JS SCENE ---
         const scene = new THREE.Scene();
@@ -78,10 +89,17 @@
         // --- AUDIO ---
         function initAudio() {
             ctx = new (window.AudioContext || window.webkitAudioContext)();
+            // init reverb chain
+            initReverb();
             const createDrone = (f, g, type='sine') => {
                 let o = ctx.createOscillator(); let gn = ctx.createGain();
                 o.type = type; o.frequency.value = f; gn.gain.value = g;
-                o.connect(gn); gn.connect(ctx.destination); o.start(); return {o, gn};
+                // route to dry and wet (convolver)
+                o.connect(gn);
+                gn.connect(ctx.destination);
+                if (convolver) gn.connect(convolver);
+                o.start();
+                return {o, gn};
             };
             mainOsc = createDrone(432, 0.1);
             tanpura = createDrone(648, 0.05); // Pure 5th
@@ -136,6 +154,107 @@
         };
         document.getElementById('exportBtn').onclick = saveLog;
         window.onkeydown = (e) => { if(e.code === 'Space') ascend(); };
+
+        // --- RAGA PICKER (loads ragas.json and applies vibration) ---
+        const ragaPicker = document.getElementById('raga-picker');
+
+        async function initRagaPicker() {
+            try {
+                const response = await fetch('./ragas.json');
+                const data = await response.json();
+
+                ragaPicker.innerHTML = '';
+                data.ragas.forEach((raga, index) => {
+                    const opt = document.createElement('option');
+                    opt.value = index;
+                    opt.textContent = raga.name;
+                    ragaPicker.appendChild(opt);
+                });
+
+                ragaPicker.onchange = (e) => {
+                    const selected = data.ragas[e.target.value];
+                    applyRagaVibration(selected);
+                };
+            } catch (err) {
+                console.error('Akashic Link Error:', err);
+                ragaPicker.innerHTML = '<option>Error Loading</option>';
+            }
+        }
+
+        function applyRagaVibration(raga) {
+            if (!raga) return;
+            if(!audioOn) initAudio();
+
+            const baseFreq = 432 * (raga.ratios && raga.ratios.length ? raga.ratios[0] : 1.0);
+            if (mainOsc && mainOsc.o && ctx) {
+                mainOsc.o.frequency.exponentialRampToValueAtTime(baseFreq, ctx.currentTime + 2);
+            }
+
+            // Update HUD
+            document.getElementById('ragaName').innerText = raga.name;
+            document.getElementById('freqVal').innerText = Math.round(baseFreq);
+
+            // Change orb color based on Raga time/mood
+            const colors = { 'Morning': 0xffaa00, 'Night': 0x4400ff, 'Monsoon': 0x00aaff };
+            const color = colors[raga.time] || 0x00ff88;
+            if (orb && orb.material) {
+                orb.material.color.setHex(color);
+                if (orb.material.emissive) orb.material.emissive.setHex(color);
+            }
+            // update tanpura to match selected raga base
+            startTanpura(432 * (raga.ratios && raga.ratios.length ? raga.ratios[0] : 1.0));
+        }
+
+        initRagaPicker();
+
+        // --- TANPURA (multi-oscillator drone) ---
+        function startTanpura(baseFreq) {
+            // stop previous oscillators
+            tanpuraOscs.forEach(o => {
+                try { o.stop(); } catch (e) {}
+            });
+            tanpuraOscs = [];
+
+            // Traditional 'Pa-Sa-Sa-Sa' pattern (approximate multipliers)
+            const harmonics = [0.75, 1.0, 1.0, 0.5];
+            harmonics.forEach(mult => {
+                const osc = ctx.createOscillator();
+                const g = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = baseFreq * mult;
+                g.gain.value = 0.02;
+                osc.connect(g);
+                g.connect(ctx.destination);
+                if (convolver) g.connect(convolver);
+                osc.start();
+                // keep references so we can stop later
+                tanpuraOscs.push({osc, g});
+            });
+        }
+
+        // --- REVERB / CONVOLVER ---
+        function createImpulseResponse(seconds = 3, decay = 2.0) {
+            const rate = ctx.sampleRate;
+            const length = rate * seconds;
+            const ir = ctx.createBuffer(2, length, rate);
+            for (let ch = 0; ch < 2; ch++) {
+                const channel = ir.getChannelData(ch);
+                for (let i = 0; i < length; i++) {
+                    channel[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
+                }
+            }
+            return ir;
+        }
+
+        function initReverb() {
+            if (!ctx) return;
+            convolver = ctx.createConvolver();
+            convolver.buffer = createImpulseResponse(3, 2.0);
+            reverbGain = ctx.createGain();
+            reverbGain.gain.value = reverbWet;
+            convolver.connect(reverbGain);
+            reverbGain.connect(ctx.destination);
+        }
 
         function animate() {
             requestAnimationFrame(animate);
