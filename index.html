@@ -17,7 +17,7 @@
 <body>
     <div class="hud">
         🌀 LOKA: <span id="lokaVal">1</span> / 14<br>
-        🔊 FREQ: <span id="freqVal">432</span> Hz<br>
+        🔊 FREQ: <span id="freqVal">432</span> Hz (<span id="ratioVal">1:1</span>)<br>
         ✨ RAGA: <span id="ragaName">Bhairav (Sa)</span>
     </div>
     
@@ -38,6 +38,24 @@
         <button id="exportBtn" style="background:#44aaff;">📜 EXPORT AKASHIC LOG</button>
     </div>
 
+    <div id="shruti-container" style="position: absolute; bottom: 20px; right: 20px; display: grid; grid-template-columns: repeat(11, 1fr); gap: 5px; width: 300px;">
+        <script>
+            const container = document.getElementById('shruti-container');
+            for(let i=1; i<=22; i++) {
+                const btn = document.createElement('button');
+                btn.innerText = i;
+                btn.title = SHRUTI_NAMES[i-1];
+                btn.style.padding = "5px";
+                btn.style.fontSize = "10px";
+                btn.style.background = "#222";
+                btn.style.color = "#0f0";
+                btn.style.border = "1px solid #0f0";
+                btn.onclick = () => playShruti(i);
+                container.appendChild(btn);
+            }
+        </script>
+    </div>
+
     <div id="moksha">✨ MOKSHA ✨</div>
 
     <script type="module">
@@ -45,21 +63,53 @@
 
         // --- QUANTATECH RATIOS (432 Hz Base) ---
         const LOKA_DATA = {
-            1: { ratio: 1.0, raga: "Bhairav", note: "Sa" },
-            2: { ratio: 1.125, raga: "Yaman", note: "Re" },
-            3: { ratio: 1.25, raga: "Bhopali", note: "Ga" },
-            4: { ratio: 1.333, raga: "Bhairavi", note: "Ma" },
-            5: { ratio: 1.5, raga: "Todi", note: "Pa" },
-            6: { ratio: 1.666, raga: "Marwa", note: "Dha" },
-            7: { ratio: 1.875, raga: "Poorvi", note: "Ni" },
-            8: { ratio: 2.0, raga: "Atala", note: "Sa+" },
-            9: { ratio: 2.25, raga: "Vitala", note: "Re+" },
-            10: { ratio: 2.5, raga: "Sutala", note: "Ga+" },
-            11: { ratio: 2.666, raga: "Talatala", note: "Ma+" },
-            12: { ratio: 3.0, raga: "Mahatala", note: "Pa+" },
-            13: { ratio: 3.333, raga: "Rasatala", note: "Dha+" },
-            14: { ratio: 3.75, raga: "Patala", note: "Ni+" }
+            1: { ratio: 1.0, raga: "Bhairav", note: "Sa", fraction: "1:1" },
+            2: { ratio: 1.125, raga: "Yaman", note: "Re", fraction: "9:8" },
+            3: { ratio: 1.25, raga: "Bhopali", note: "Ga", fraction: "5:4" },
+            4: { ratio: 1.333, raga: "Bhairavi", note: "Ma", fraction: "4:3" },
+            5: { ratio: 1.5, raga: "Todi", note: "Pa", fraction: "3:2" },
+            6: { ratio: 1.666, raga: "Marwa", note: "Dha", fraction: "5:3" },
+            7: { ratio: 1.875, raga: "Poorvi", note: "Ni", fraction: "15:8" },
+            8: { ratio: 2.0, raga: "Atala", note: "Sa+", fraction: "2:1" },
+            9: { ratio: 2.25, raga: "Vitala", note: "Re+", fraction: "9:4" },
+            10: { ratio: 2.5, raga: "Sutala", note: "Ga+", fraction: "5:2" },
+            11: { ratio: 2.666, raga: "Talatala", note: "Ma+", fraction: "8:3" },
+            12: { ratio: 3.0, raga: "Mahatala", note: "Pa+", fraction: "3:1" },
+            13: { ratio: 3.333, raga: "Rasatala", note: "Dha+", fraction: "10:3" },
+            14: { ratio: 3.75, raga: "Patala", note: "Ni+", fraction: "15:4" }
         };
+
+        // 22 Shruti Ratio Map
+        const SHRUTI_MAP = {
+            1: 1.0,        // Sa
+            2: 1.0125,     // Sa+
+            3: 1.0535,     // re
+            4: 1.0666,     // re+
+            5: 1.1111,     // Re
+            6: 1.125,      // Re+
+            7: 1.1851,     // ga
+            8: 1.2,        // ga+
+            9: 1.25,       // Ga
+            10: 1.2656,    // Ga+
+            11: 1.3333,    // Ma
+            12: 1.35,      // Ma+
+            13: 1.4063,    // MA
+            14: 1.4222,    // MA+
+            15: 1.5,       // Pa
+            16: 1.5187,    // Pa+
+            17: 1.5802,    // dha
+            18: 1.6,       // dha+
+            19: 1.6666,    // Dha
+            20: 1.6875,    // Dha+
+            21: 1.7777,    // ni
+            22: 1.875      // Ni
+        };
+
+        const SHRUTI_NAMES = [
+            "Kshanti", "Diptimati", "Ayata", "Rati", "Krodha", "Prasanni", "Sandipini", "Alapini",
+            "Madanti", "Rohini", "Ramdasi", "Kumudvati", "Vijay", "Nand", "Pushti",
+            "Shukti", "Veda", "Dayavati", "Aditi", "Nandi", "Viswambhari", "Ramapriya"
+        ];
 
         // --- STATE ---
         let loka = 1, journey = [], audioOn = false, auto = false;
@@ -85,6 +135,18 @@
         for(let i=0; i<1000; i++) starPos.push((Math.random()-0.5)*100, (Math.random()-0.5)*100, (Math.random()-0.5)*100);
         stars.geometry.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
         scene.add(stars);
+
+        // Particle effects
+        const particles = new THREE.Points(new THREE.BufferGeometry(), new THREE.PointsMaterial({ color: 0xffaa00, size: 0.05 }));
+        const particlePos = [];
+        const particleVel = [];
+        let particleSpeed = 0.01;
+        for(let i=0; i<500; i++) {
+            particlePos.push(0,0,0);
+            particleVel.push((Math.random()-0.5)*particleSpeed, (Math.random()-0.5)*particleSpeed, (Math.random()-0.5)*particleSpeed);
+        }
+        particles.geometry.setAttribute('position', new THREE.Float32BufferAttribute(particlePos, 3));
+        scene.add(particles);
 
         // --- AUDIO ---
         function initAudio() {
@@ -112,6 +174,7 @@
             loka++;
             const d = LOKA_DATA[loka];
             const f = 432 * d.ratio;
+            particleSpeed = (f / 432) * 0.02;
             
             // Audio Glide
             [mainOsc, tanpura, bass].forEach((osc, i) => {
@@ -122,11 +185,10 @@
             // UI
             document.getElementById('lokaVal').innerText = loka;
             document.getElementById('freqVal').innerText = Math.round(f);
+            document.getElementById('ratioVal').innerText = d.fraction;
             document.getElementById('ragaName').innerText = `${d.raga} (${d.note})`;
             
-            const msg = document.getElementById('message');
-            msg.innerHTML = `✨ ${d.note} ✨<br><small>${d.raga}</small>`;
-            msg.style.opacity = 1; setTimeout(()=> msg.style.opacity = 0, 1500);
+            showMessage(`✨ ${d.note} ✨<br><small>${d.raga}</small>`);
 
             journey.push({ loka, raga: d.raga, hz: f });
             orb.scale.setScalar(1.2); setTimeout(()=> orb.scale.setScalar(1), 300);
@@ -137,6 +199,31 @@
             [mainOsc, tanpura, bass].forEach(osc => osc.gn.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 3));
             saveLog();
         }
+
+        /**
+         * Plays a specific Shruti frequency
+         * @param {number} shrutiNumber - 1 to 22
+         */
+        function playShruti(shrutiNumber) {
+            if (!audioOn) initAudio();
+            
+            const ratio = SHRUTI_MAP[shrutiNumber];
+            const targetFreq = 432 * ratio;
+            
+            // Smooth transition to the microtone
+            mainOsc.o.frequency.exponentialRampToValueAtTime(targetFreq, ctx.currentTime + 0.5);
+            
+            // UI Update
+            document.getElementById('freqVal').innerText = targetFreq.toFixed(2);
+            showMessage(`Shruti ${shrutiNumber}: ${targetFreq.toFixed(2)} Hz`);
+        }
+
+        function showMessage(text) {
+            const msg = document.getElementById('message');
+            msg.innerHTML = text;
+            msg.style.opacity = 1;
+            setTimeout(() => msg.style.opacity = 0, 1500);
+        }
 
         function saveLog() {
             const blob = new Blob([JSON.stringify(journey, null, 2)], {type: 'application/json'});
@@ -260,6 +347,25 @@
             requestAnimationFrame(animate);
             orb.rotation.y += 0.01;
             stars.rotation.z += 0.001;
+
+            // Update particles
+            const pos = particles.geometry.attributes.position.array;
+            for(let i=0; i<pos.length; i+=3){
+                pos[i] += particleVel[i];
+                pos[i+1] += particleVel[i+1];
+                pos[i+2] += particleVel[i+2];
+                const dist = Math.sqrt(pos[i]**2 + pos[i+1]**2 + pos[i+2]**2);
+                if(dist > 8){
+                    pos[i] = 0;
+                    pos[i+1] = 0;
+                    pos[i+2] = 0;
+                    particleVel[i] = (Math.random()-0.5)*particleSpeed;
+                    particleVel[i+1] = (Math.random()-0.5)*particleSpeed;
+                    particleVel[i+2] = (Math.random()-0.5)*particleSpeed;
+                }
+            }
+            particles.geometry.attributes.position.needsUpdate = true;
+
             renderer.render(scene, camera);
         }
         animate();
