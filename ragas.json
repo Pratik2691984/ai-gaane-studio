@@ -1,0 +1,8 @@
+{
+  "ragas": [
+    { "name": "Ahir Bhairav", "time": "Morning", "ratios": [1.0, 1.054, 1.25, 1.333, 1.5, 1.666, 1.777] },
+    { "name": "Bageshree",   "time": "Night",   "ratios": [1.0, 1.125, 1.2, 1.333, 1.5, 1.666, 1.8] },
+    { "name": "Desh",        "time": "Night",   "ratios": [1.0, 1.125, 1.333, 1.5, 1.875, 2.0] },
+    { "name": "Bhairav",     "time": "Morning", "ratios": [1.0, 1.054, 1.25, 1.333, 1.5, 1.58, 1.875] }
+  ]
+}

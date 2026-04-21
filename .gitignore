@@ -1,1 +1,14 @@
+<<<<<<< HEAD
 .vercel
+=======
+cat <<EOF > .gitignore
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.json
+!package.json
+node_modules/
+dist/
+EOF
+>>>>>>> 6ec0d117f9a2af82f23f58dbdb2f2ca069474d04
