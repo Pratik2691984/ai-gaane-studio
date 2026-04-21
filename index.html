@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>AI GAANE · Vedic AI Platform | Soul Map Engine</title>
+    <meta name="description" content="AI GAANE - Vedic AI Platform. Explore Soul Map 2.0, Mantra Lab, Astrology, and ancient wisdom of Vedas, Chakras, Tantra & Mudra.">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0B0E14;
+            color: #FFFFFF;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(2px 2px at 20px 30px, #ffffff20, rgba(0,0,0,0)),
+                              radial-gradient(1px 1px at 60px 90px, #FFD70030, rgba(0,0,0,0));
+            background-size: 200px 200px, 150px 150px;
+            background-repeat: repeat;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.3;
+        }
+
+        .top-header {
+            background: rgba(15, 20, 30, 0.85);
+            backdrop-filter: blur(12px);
+            padding: 0.8rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #FFD700, #FFA500, #FF69B4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .top-nav {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .top-nav a {
+            color: #e0e0e0;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 0.5rem 0;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+        }
+
+        .top-nav a:hover, .top-nav a.active {
+            color: #FFD700;
+            border-bottom-color: #FFD700;
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #0B0E14 !important;
+            padding: 0.5rem 1.2rem !important;
+            border-radius: 30px;
+            font-weight: 600 !important;
+        }
+
+        .login-btn:hover {
+            transform: scale(0.98);
+            border-bottom-color: transparent !important;
+        }
+
+        .main-layout {
+            display: flex;
+            min-height: calc(100vh - 70px);
+            position: relative;
+            z-index: 1;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: rgba(10, 15, 25, 0.7);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 215, 0, 0.15);
+            padding: 2rem 0;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 70px;
+            height: calc(100vh - 70px);
+            overflow-y: auto;
+        }
+
+        .sidebar a {
+            padding: 0.9rem 1.8rem;
+            color: #b0b0b0;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .sidebar a i {
+            width: 24px;
+            font-size: 1.1rem;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            background: rgba(255, 215, 0, 0.1);
+            color: #FFD700;
+            border-left-color: #FFD700;
+        }
+
+        .contact-btn {
+            margin-top: auto;
+            margin-bottom: 1rem;
+            background: rgba(231, 76, 60, 0.2);
+            border-left-color: #e74c3c !important;
+        }
+
+        .contact-btn:hover {
+            background: rgba(231, 76, 60, 0.4) !important;
+            color: #e74c3c !important;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .card {
+            background: rgba(20, 25, 40, 0.6);
+            backdrop-filter: blur(8px);
+            border-radius: 24px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            margin-bottom: 1.5rem;
+        }
+
+        .card h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #FFD700;
+        }
+
+        .card p {
+            line-height: 1.6;
+            color: #c0c0c0;
+        }
+
+        .card ul {
+            color: #c0c0c0;
+            margin-left: 1.5rem;
+        }
+
+        .card li {
+            margin: 0.5rem 0;
+        }
+
+        .soulmap-preview {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .soulmap-preview:hover {
+            transform: translateY(-5px);
+            border-color: #FFD700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .live-badge {
+            background: #4ecdc4;
+            color: #0B0E14;
+            font-size: 0.6rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+
+        @media (max-width: 768px) {
+            .top-header {
+                flex-direction: column;
+                padding: 1rem;
+            }
+            .top-nav {
+                justify-content: center;
+            }
+            .main-layout {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                position: static;
+                height: auto;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 0.5rem;
+                padding: 1rem;
+            }
+            .sidebar a {
+                padding: 0.5rem 1rem;
+                border-left: none;
+                border-bottom: 2px solid transparent;
+            }
+            .sidebar a:hover, .sidebar a.active {
+                border-left-color: transparent;
+                border-bottom-color: #FFD700;
+            }
+            .contact-btn {
+                margin-top: 0;
+            }
+            .content-area {
+                padding: 1rem;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1f2e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FFD700;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<header class="top-header">
+    <div class="logo">🕉 AI GAANE</div>
+    <nav class="top-nav">
+        <a data-page="soulmap" class="active">🌌 Soul Map 2.0 Engine <span class="live-badge">LIVE</span></a>
+        <a data-page="mantralab">🎵 Mantra Lab</a>
+        <a data-page="astrology">⭐ Astrology</a>
+        <a data-page="dashboard">📊 Dashboard</a>
+        <a class="login-btn">🔐 User Login</a>
+    </nav>
+</header>
+
+<div class="main-layout">
+    <aside class="sidebar">
+        <a data-content="vedic"><i class="fas fa-book-open"></i> Vedic Philosophy</a>
+        <a data-content="sound"><i class="fas fa-head-side-vr"></i> Sound & Meditation</a>
+        <a data-content="mantra"><i class="fas fa-om"></i> Mantra</a>
+        <a data-content="chakras"><i class="fas fa-chakra"></i> Chakras</a>
+        <a data-content="tantra"><i class="fas fa-yin-yang"></i> Tantra</a>
+        <a data-content="mudra"><i class="fas fa-hand-peace"></i> Mudra</a>
+        <a data-content="contact" class="contact-btn"><i class="fas fa-envelope"></i> Contact Us</a>
+    </aside>
+
+    <main class="content-area" id="mainContent"></main>
+</div>
+
+<script>
+    const contentData = {
+        vedic: {
+            title: "📖 Vedic Philosophy",
+            content: `<p>The Vedas are the oldest sacred texts of Hinduism, composed in Sanskrit between 1500-500 BCE. They consist of four collections: Rigveda (hymns), Samaveda (melodies), Yajurveda (rituals), and Atharvaveda (spells).</p>
+            <br><p><strong>Core Concepts:</strong></p>
+            <ul><li><strong>Sanatana Dharma:</strong> The eternal way of righteousness</li><li><strong>Karma:</strong> Action and its consequences</li><li><strong>Dharma:</strong> Cosmic order and duty</li><li><strong>Moksha:</strong> Liberation from the cycle of rebirth</li></ul>
+            <br><p>The Upanishads, composed later, explore the philosophical essence of the Vedas, focusing on the nature of Brahman (ultimate reality) and Atman (individual soul).</p>`
+        },
+        sound: {
+            title: "🎵 Sound & Meditation",
+            content: `<p>Sound is the foundation of creation. The Sanskrit word "Nada" means both sound and flow of consciousness.</p>
+            <br><p><strong>Sacred Frequencies:</strong></p>
+            <ul><li><strong>432 Hz:</strong> "Verdi tuning" — harmonizes with natural resonance</li><li><strong>528 Hz:</strong> "Miracle tone" — associated with DNA repair</li><li><strong>136.10 Hz:</strong> The OM frequency — Earth's year resonance</li></ul>
+            <br><p>In Vedic tradition, Nada Yoga uses mantra and music to transcend the mind.</p>
+            <br><div style="background: rgba(255,215,0,0.1); padding: 1rem; border-radius: 16px;"><i class="fas fa-play-circle"></i> <strong>Experience Now:</strong> <a href="soulmap.html" style="color:#FFD700;">Launch Soul Map →</a></div>`
+        },
+        mantra: {
+            title: "🔮 Mantra",
+            content: `<p>"Man" (mind) + "tra" (instrument) = Mantra: a tool for the mind.</p>
+            <br><p><strong>Types of Mantras:</strong></p>
+            <ul><li><strong>Beeja Mantras:</strong> Single-syllable seed sounds (Om, Hreem, Kreem)</li><li><strong>Kirtan:</strong> Call-and-response chanting</li><li><strong>Gayatri Mantra:</strong> Universal prayer for illumination</li></ul>
+            <br><div style="background: rgba(255,215,0,0.1); padding: 1rem; border-radius: 16px;"><i class="fas fa-om"></i> <strong>Practice:</strong> Visit <a href="soulmap.html" style="color:#FFD700;">Soul Map →</a> for planetary frequency mantras</div>`
+        },
+        chakras: {
+            title: "🌀 Chakras",
+            content: `<p>Chakras are energy centers in the subtle body. There are seven primary chakras aligned along the spine.</p>
+            <br><p><strong>The Seven Chakras:</strong></p>
+            <ul><li><strong>Muladhara (Root):</strong> Red — 396 Hz</li><li><strong>Svadhisthana (Sacral):</strong> Orange — 417 Hz</li><li><strong>Manipura (Solar Plexus):</strong> Yellow — 528 Hz</li><li><strong>Anahata (Heart):</strong> Green — 639 Hz</li><li><strong>Vishuddha (Throat):</strong> Blue — 741 Hz</li><li><strong>Ajna (Third Eye):</strong> Indigo — 852 Hz</li><li><strong>Sahasrara (Crown):</strong> Violet — 963 Hz</li></ul>`
+        },
+        tantra: {
+            title: "⚡ Tantra",
+            content: `<p>Tantra means "loom" or "weave" — the interweaving of all aspects of life into spiritual practice.</p>
+            <br><p><strong>Core Principles:</strong></p>
+            <ul><li><strong>Non-duality:</strong> The material and spiritual are one</li><li><strong>Ritual as Sadhana:</strong> Every action can be a meditation</li><li><strong>Shakti:</strong> The divine feminine energy that animates creation</li></ul>`
+        },
+        mudra: {
+            title: "🖐️ Mudra",
+            content: `<p>Mudras are hand gestures that channel energy in the body. Each finger represents an element:</p>
+            <br><ul><li><strong>Thumb:</strong> Fire (Agni)</li><li><strong>Index:</strong> Air (Vayu)</li><li><strong>Middle:</strong> Ether (Akasha)</li><li><strong>Ring:</strong> Earth (Prithvi)</li><li><strong>Little:</strong> Water (Jala)</li></ul>
+            <br><p><strong>Common Mudras:</strong> Gyan Mudra (wisdom), Prithvi Mudra (grounding), Dhyana Mudra (meditation)</p>`
+        },
+        contact: {
+            title: "📬 Contact Us",
+            content: `<p>Have questions about your Soul Map? Want to collaborate or share feedback?</p>
+            <br><p><strong>Email:</strong> <a href="mailto:hello@aigaane.in" style="color:#FFD700;">hello@aigaane.in</a></p>
+            <p><strong>Follow us:</strong></p>
+            <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
+                <i class="fab fa-instagram" style="font-size: 1.8rem; cursor: pointer;"></i>
+                <i class="fab fa-twitter" style="font-size: 1.8rem; cursor: pointer;"></i>
+                <i class="fab fa-youtube" style="font-size: 1.8rem; cursor: pointer;"></i>
+            </div>
+            <br><p><strong>Join our Sangha:</strong> Connect with fellow seekers (coming soon).</p>`
+        }
+    };
+
+    function showSoulMapPreview() {
+        const soulMapData = JSON.parse(localStorage.getItem('aigaane_soulmap')) || { streak: 0 };
+        document.getElementById('mainContent').innerHTML = `
+            <div class="card">
+                <h2><i class="fas fa-chart-line"></i> 🌌 Soul Map 2.0 Engine <span class="live-badge">ACTIVE</span></h2>
+                <p>Your personal Vedic OS. Real-time planetary frequencies and your Sadhana Mandala.</p>
+                <br>
+                <div class="soulmap-preview" onclick="window.location.href='soulmap.html'">
+                    <i class="fas fa-head-side-vr" style="font-size: 3rem; color: #FFD700;"></i>
+                    <h3 style="margin-top: 0.5rem;">Launch Interactive Soul Map →</h3>
+                    <p style="font-size: 0.8rem;">✨ 4 Planetary Frequencies | Audio Drone | Streak Tracking</p>
+                    <div style="margin-top: 0.5rem; font-size: 0.7rem; color: #4ecdc4;">
+                        <i class="fas fa-fire"></i> Your Streak: ${soulMapData.streak || 0} days
+                    </div>
+                </div>
+                <br>
+                <div style="background: rgba(255,215,0,0.05); border-radius: 16px; padding: 1rem;">
+                    <h3><i class="fas fa-star-of-life"></i> Today's Cosmic Weather</h3>
+                    <p>🌙 Current Nakshatra: <strong>Rohini</strong> · 136.10 Hz</p>
+                    <p>🔥 Planetary Hour: <strong>Mangala</strong> (169.34 Hz) — Ideal for courage</p>
+                </div>
+            </div>
+        `;
+    }
+
+    function showMantraLab() {
+        document.getElementById('mainContent').innerHTML = `
+            <div class="card">
+                <h2><i class="fas fa-microphone-alt"></i> Mantra Lab</h2>
+                <p>Explore mantras by intention and planetary alignment.</p>
+                <br>
+                <div style="background: rgba(0,0,0,0.3); padding: 1.5rem; border-radius: 16px;">
+                    <h3><i class="fas fa-sun"></i> Today's Recommended Mantra</h3>
+                    <p style="font-size: 1.2rem; margin: 1rem 0;"><strong>"ॐ हनुमते नमः"</strong> — Hanuman Mantra</p>
+                    <p>Frequency: 169.34 Hz (Mangala) · For strength and protection</p>
+                    <button onclick="window.location.href='soulmap.html'" style="background:rgba(255,215,0,0.2); border:1px solid #FFD700; padding:0.5rem 1.5rem; border-radius:30px; margin-top:1rem; cursor:pointer;">🎧 Practice in Soul Map →</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function showAstrology() {
+        document.getElementById('mainContent').innerHTML = `
+            <div class="card">
+                <h2><i class="fas fa-chart-line"></i> Astrology Deep Dive</h2>
+                <p>Discover your Nakshatra, planetary influences, and cosmic alignment.</p>
+                <br>
+                <div style="background: rgba(0,0,0,0.3); padding: 1.5rem; border-radius: 16px; text-align: center;">
+                    <i class="fas fa-chart-line" style="font-size: 3rem; color: #FFD700;"></i>
+                    <h3>Birth Chart Coming Soon</h3>
+                    <button onclick="window.location.href='soulmap.html'" style="background:rgba(255,215,0,0.2); border:1px solid #FFD700; padding:0.5rem 1.5rem; border-radius:30px; margin-top:1rem; cursor:pointer;">🌌 Try Soul Map →</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function showDashboard() {
+        const soulMapData = JSON.parse(localStorage.getItem('aigaane_soulmap')) || { streak: 0, practices: [] };
+        document.getElementById('mainContent').innerHTML = `
+            <div class="card">
+                <h2><i class="fas fa-user-astronaut"></i> User Dashboard</h2>
+                <p>Track your Soul Map progress and spiritual journey.</p>
+                <br>
+                <div style="background: rgba(0,0,0,0.3); padding: 1.5rem; border-radius: 16px; text-align: center;">
+                    <i class="fas fa-chart-line" style="font-size: 3rem; color: #FFD700;"></i>
+                    <h3>Your Sadhana</h3>
+                    <p><strong>🔥 Current Streak:</strong> ${soulMapData.streak || 0} days</p>
+                    <p><strong>📿 Practices Saved:</strong> ${soulMapData.practices?.length || 0}</p>
+                    <button onclick="window.location.href='soulmap.html'" style="background:rgba(255,215,0,0.2); border:1px solid #FFD700; padding:0.5rem 1.5rem; border-radius:30px; margin-top:1rem; cursor:pointer;">🌌 Open Soul Map →</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function loadContent(contentId) {
+        const data = contentData[contentId];
+        if (data) {
+            document.getElementById('mainContent').innerHTML = `
+                <div class="card">
+                    <h2>${data.title}</h2>
+                    ${data.content}
+                    <br><div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,215,0,0.1);">
+                        <p><i class="fas fa-map"></i> <strong onclick="window.location.href='soulmap.html'" style="color:#FFD700; cursor:pointer;">Launch Soul Map →</strong> for interactive practice</p>
+                    </div>
+                </div>
+            `;
+            document.querySelectorAll('.sidebar a').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('data-content') === contentId) link.classList.add('active');
+            });
+        }
+    }
+
+    function navigateToTool(page) {
+        document.querySelectorAll('.top-nav a').forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('data-page') === page) link.classList.add('active');
+        });
+        if (page === 'soulmap') showSoulMapPreview();
+        else if (page === 'mantralab') showMantraLab();
+        else if (page === 'astrology') showAstrology();
+        else if (page === 'dashboard') showDashboard();
+    }
+
+    document.querySelectorAll('.sidebar a').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const contentId = link.getAttribute('data-content');
+            if (contentId) loadContent(contentId);
+        });
+    });
+
+    document.querySelectorAll('.top-nav a[data-page]').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const page = link.getAttribute('data-page');
+            if (page) navigateToTool(page);
+        });
+    });
+
+    showSoulMapPreview();
+</script>
+</body>
+</html>

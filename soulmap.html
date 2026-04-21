@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIGAANE · Soul Map Engine</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0B0E14;
+            color: #FFD700;
+            font-family: 'Inter', monospace;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { text-align: center; margin-bottom: 40px; font-size: 48px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .card {
+            background: rgba(255,215,0,0.1);
+            border: 1px solid rgba(255,215,0,0.3);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+        }
+        .planet-icon { font-size: 64px; margin-bottom: 10px; }
+        .frequency { font-size: 28px; font-family: monospace; margin: 10px 0; }
+        button {
+            background: rgba(255,215,0,0.2);
+            border: 1px solid #FFD700;
+            border-radius: 40px;
+            padding: 10px 20px;
+            color: #FFD700;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover { background: rgba(255,215,0,0.4); }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #FFD700;
+            text-decoration: none;
+        }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <a href="/" class="back-link">← Back to Main Site</a>
+    <h1>🕉 AIGAANE · SOUL MAP</h1>
+    <div class="grid">
+        <div class="card">
+            <div class="planet-icon">☀️</div>
+            <h2>SURYA</h2>
+            <div class="frequency">126.22 Hz</div>
+            <button class="playBtn" data-freq="126.22">▶ PLAY</button>
+        </div>
+        <div class="card">
+            <div class="planet-icon">🌙</div>
+            <h2>CHANDRA</h2>
+            <div class="frequency">136.10 Hz</div>
+            <button class="playBtn" data-freq="136.10">▶ PLAY</button>
+        </div>
+        <div class="card">
+            <div class="planet-icon">🔴</div>
+            <h2>MANGALA</h2>
+            <div class="frequency">169.34 Hz</div>
+            <button class="playBtn" data-freq="169.34">▶ PLAY</button>
+        </div>
+        <div class="card">
+            <div class="planet-icon">🟡</div>
+            <h2>GURU</h2>
+            <div class="frequency">216.00 Hz</div>
+            <button class="playBtn" data-freq="216.00">▶ PLAY</button>
+        </div>
+    </div>
+    
+    <div class="card" style="margin-top: 20px;">
+        <h3>📿 MY SOUL MAP</h3>
+        <div id="streakDisplay">Streak: 0 days</div>
+        <div id="savedDisplay">Saved: 0 practices</div>
+        <button id="saveBtn">💾 SAVE CURRENT PRACTICE</button>
+        <button id="resetBtn">🔄 RESET</button>
+    </div>
+</div>
+
+<script>
+    let audioCtx = null;
+    let currentOsc = null;
+    let currentFreq = 126.22;
+    
+    let soulMap = JSON.parse(localStorage.getItem('aigaane_soulmap')) || { streak: 0, lastDate: null, practices: [] };
+    
+    function updateStreak() {
+        const today = new Date().toDateString();
+        if (soulMap.lastDate !== today) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            if (soulMap.lastDate === yesterday.toDateString()) soulMap.streak++;
+            else soulMap.streak = 1;
+            soulMap.lastDate = today;
+            localStorage.setItem('aigaane_soulmap', JSON.stringify(soulMap));
+        }
+        document.getElementById('streakDisplay').innerHTML = `Streak: ${soulMap.streak} days`;
+        document.getElementById('savedDisplay').innerHTML = `Saved: ${soulMap.practices.length} practices`;
+    }
+    
+    function playFreq(freq) {
+        if (currentOsc) {
+            try { currentOsc.stop(); } catch(e) {}
+        }
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const gain = audioCtx.createGain();
+        gain.gain.value = 0.1;
+        gain.connect(audioCtx.destination);
+        const osc = audioCtx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        osc.connect(gain);
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        osc.start();
+        currentOsc = osc;
+        currentFreq = freq;
+    }
+    
+    document.querySelectorAll('.playBtn').forEach(btn => {
+        btn.onclick = () => playFreq(parseFloat(btn.dataset.freq));
+    });
+    
+    document.getElementById('saveBtn').onclick = () => {
+        soulMap.practices.unshift({ date: new Date().toISOString(), frequency: currentFreq });
+        localStorage.setItem('aigaane_soulmap', JSON.stringify(soulMap));
+        updateStreak();
+        alert('✅ Practice saved!');
+    };
+    
+    document.getElementById('resetBtn').onclick = () => {
+        if (confirm('Reset all data?')) {
+            soulMap = { streak: 0, lastDate: null, practices: [] };
+            localStorage.setItem('aigaane_soulmap', JSON.stringify(soulMap));
+            updateStreak();
+        }
+    };
+    
+    updateStreak();
+</script>
+</body>
+</html>
